@@ -1,12 +1,40 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthProvider";
 
 const SignUp = () => {
+  const { createUser, updateUserProfile } = useContext(AuthContext);
+  const [signUpError, setSignUpError] = useState("");
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const handleSignUp = (data) => {
+    setSignUpError("");
+    createUser(data.email, data.password)
+      .then((result) => {
+        toast.success("User created successfully");
+        const userInfo = { displayName: data.name };
+        updateUserProfile(userInfo)
+          .then(() => {
+            navigate("/");
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => {
+        console.log(err);
+        setSignUpError(err.message);
+      });
+  };
   return (
     <div className="h-[800px] flex items-center justify-center">
       <div className="w-96 p-7">
         <h2 className="text-2xl text-center">Sign Up</h2>
-        <form>
+        <form onSubmit={handleSubmit(handleSignUp)}>
           <div className="form-control w-full max-w-xs">
             <label className="label">
               <span className="label-text">Name</span>
@@ -14,6 +42,9 @@ const SignUp = () => {
             <input
               type="text"
               placeholder="your name"
+              {...register("name", {
+                required: "name is required",
+              })}
               className="input input-bordered w-full max-w-xs"
             />
           </div>
@@ -24,8 +55,14 @@ const SignUp = () => {
             <input
               type="email"
               placeholder="your email"
+              {...register("email", {
+                required: "email is required",
+              })}
               className="input input-bordered w-full max-w-xs"
             />
+            {errors.email && (
+              <p className="text-red-400">{errors.email?.message}</p>
+            )}
           </div>
           <div className="form-control w-full max-w-xs">
             <label className="label">
@@ -34,9 +71,22 @@ const SignUp = () => {
             <input
               type="password"
               placeholder="your password"
+              {...register("password", {
+                required: "password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be 6 chracters long",
+                },
+                pattern: {
+                  value: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])/,
+                  message: "Password must be strong",
+                },
+              })}
               className="input input-bordered w-full max-w-xs"
             />
-
+            {errors.password && (
+              <p className="text-red-400">{errors.password?.message}</p>
+            )}
             <label className="label">
               <span className="label-text text-xs">Forget password?</span>
             </label>
@@ -44,9 +94,10 @@ const SignUp = () => {
 
           <input
             type="submit"
-            className="btn btn-accent w-full"
+            className="btn btn-accent w-full mt-4"
             value="Sign Up"
           />
+          {signUpError && <p className="text-red-400">{signUpError}</p>}
         </form>
         <p>
           Already have an account?{" "}
