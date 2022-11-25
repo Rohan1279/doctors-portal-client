@@ -38,8 +38,8 @@ const AvailableAppoinments = ({ selectedDate }) => {
       </div>
       {treatment && (
         <BookingModal
-          setTreatment={setTreatment}
           treatment={treatment}
+          setTreatment={setTreatment}
           selectedDate={selectedDate}
           refetch={refetch}
         />
